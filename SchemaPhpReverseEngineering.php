@@ -60,7 +60,7 @@ class SchemaPhpReverseEngineering
     protected function _tables()
     {
         foreach ($this->schema->getTables() as $table) {
-            $this->tables[$table->getName()] = '$' . $table->getName() . ' = $' . $this->name . '->createTable("' . $table->getName() . '");';
+            $this->tables[$table->getName()] = '$' . $table->getName() . ' = $' . $this->name . '->createTable(\'' . $table->getName() . '\');';
             if ($table->getForeignKeys()) {
                 throw new \Exception('ForeignKeys are not implemented');
             }
@@ -82,47 +82,47 @@ class SchemaPhpReverseEngineering
      */
     protected function _column($column, $table)
     {
-        $this->columns[$table][$column->getName()] = '$' . $table . '->addColumn("' . $column->getName() . '", "' . $column->getType()->getName() . '", array(';
+        $this->columns[$table][$column->getName()] = '$' . $table . '->addColumn(\'' . $column->getName() . '\', \'' . $column->getType()->getName() . '\', array(';
 
         if ($column->getUnsigned()) {
-            $this->columns[$table][$column->getName()] .= '"unsigned"=>true,';
+            $this->columns[$table][$column->getName()] .= '\'unsigned\'=>true,';
         }
 
         if ($column->getAutoincrement()) {
-            $this->columns[$table][$column->getName()] .= '"autoincrement"=>true,';
+            $this->columns[$table][$column->getName()] .= '\'autoincrement\'=>true,';
         }
 
         if (!is_null($column->getDefault())) {
-            $this->columns[$table][$column->getName()] .= '"default"=>"' . (is_null($column->getDefault()) ? 'null' : $column->getDefault()) . '",';
+            $this->columns[$table][$column->getName()] .= '\'default\'=>\'' . (is_null($column->getDefault()) ? 'null' : $column->getDefault()) . '\',';
         }
 
         if ($column->getComment()) {
-            $this->columns[$table][$column->getName()] .= '"comment"=>"' . $column->getComment() . '",';
+            $this->columns[$table][$column->getName()] .= '\'comment\'=>\'' . $column->getComment() . '\',';
         }
 
         if (is_numeric($column->getLength())) {
-            $this->columns[$table][$column->getName()] .= '"length"=>"' . $column->getLength() . '",';
+            $this->columns[$table][$column->getName()] .= '\'length\'=>\'' . $column->getLength() . '\',';
         }
 
         if ($column->getNotnull()) {
-            $this->columns[$table][$column->getName()] .= '"notnull"=>true,';
+            $this->columns[$table][$column->getName()] .= '\'notnull\'=>true,';
         } else {
-            $this->columns[$table][$column->getName()] .= '"notnull"=>false,';
+            $this->columns[$table][$column->getName()] .= '\'notnull\'=>false,';
         }
 
         if ($column->getFixed()) {
-            $this->columns[$table][$column->getName()] .= '"fixed"=>"' . $column->getFixed() . '",';
+            $this->columns[$table][$column->getName()] .= '\'fixed\'=>\'' . $column->getFixed() . '\',';
         }
 
         switch ($column->getType()->getName()) {
             case 'float':
             case 'decimal':
                 if ($column->getPrecision()) {
-                    $this->columns[$table][$column->getName()] .= '"precision"=>"' . $column->getPrecision() . '",';
+                    $this->columns[$table][$column->getName()] .= '\'precision\'=>\'' . $column->getPrecision() . '\',';
                 }
 
                 if ($column->getScale()) {
-                    $this->columns[$table][$column->getName()] .= '"scale"=>"' . $column->getScale() . '",';
+                    $this->columns[$table][$column->getName()] .= '\'scale\'=>\'' . $column->getScale() . '\',';
                 }
                 break;
             case 'boolean':
@@ -149,11 +149,6 @@ class SchemaPhpReverseEngineering
             throw new \Exception('Unhandled _ColumnDefinition' . print_r($column->getColumnDefinition(), true));
         }
 
-        //if ($column->getType()->getName() == 'datetime') {
-        //  var_dump($column);
-        //die();
-        //}
-
         $this->columns[$table][$column->getName()] .= '));';
     }
 
@@ -168,24 +163,24 @@ class SchemaPhpReverseEngineering
 
             if ($index->isPrimary()) {
                 if ($index->getName()) {
-                    $this->indices[$table->getName()][] = '$' . $table->getName() . '->setPrimaryKey(array("' . implode('","', $index->getColumns()) . '"),"' . $index->getName() . '");';
+                    $this->indices[$table->getName()][] = '$' . $table->getName() . '->setPrimaryKey(array(\'' . implode('\',\'', $index->getColumns()) . '\'),\'' . $index->getName() . '\');';
                 } else {
-                    $this->indices[$table->getName()][] = '$' . $table->getName() . '->setPrimaryKey(array("' . implode('","', $index->getColumns()) . '"));';
+                    $this->indices[$table->getName()][] = '$' . $table->getName() . '->setPrimaryKey(array(\'' . implode('\',\'', $index->getColumns()) . '\'));';
                 }
                 continue;
             }
             if ($index->isUnique()) {
                 if ($index->getName()) {
-                    $this->indices[$table->getName()][] = '$' . $table->getName() . '->addUniqueIndex(array("' . implode('","', $index->getColumns()) . '"),"' . $index->getName() . '");';
+                    $this->indices[$table->getName()][] = '$' . $table->getName() . '->addUniqueIndex(array(\'' . implode('\',\'', $index->getColumns()) . '\'),\'' . $index->getName() . '\');';
                 } else {
-                    $this->indices[$table->getName()][] = '$' . $table->getName() . '->addUniqueIndex(array("' . implode('","', $index->getColumns()) . '"));';
+                    $this->indices[$table->getName()][] = '$' . $table->getName() . '->addUniqueIndex(array(\'' . implode('\',\'', $index->getColumns()) . '\'));';
                 }
                 continue;
             }
             if ($index->getName()) {
-                $this->indices[$table->getName()][] = '$' . $table->getName() . '->addIndex(array("' . implode('","', $index->getColumns()) . '"),"' . $index->getName() . '");';
+                $this->indices[$table->getName()][] = '$' . $table->getName() . '->addIndex(array(\'' . implode('\',\'', $index->getColumns()) . '\'),\'' . $index->getName() . '\');';
             } else {
-                $this->indices[$table->getName()][] = '$' . $table->getName() . '->addIndex(array("' . implode('","', $index->getColumns()) . '"));';
+                $this->indices[$table->getName()][] = '$' . $table->getName() . '->addIndex(array(\'' . implode('\',\'', $index->getColumns()) . '\'));';
             }
 
         };
@@ -208,7 +203,7 @@ class SchemaPhpReverseEngineering
     public function __toString()
     {
         $this->_tables();
-        $str = "//Schema" . PHP_EOL;
+        $str =  '//Schema' . PHP_EOL;
         $str .= '$' . $this->name . ' = new \Doctrine\DBAL\Schema\Schema(' . PHP_EOL;
         $str .= 'array(),' . PHP_EOL;
         $str .= 'array(),' . PHP_EOL;

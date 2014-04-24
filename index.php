@@ -11,7 +11,7 @@ require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'SchemaPhpReverseEngineer
 
 $source_params = array(
     'driver' => 'pdo_mysql',
-    'dbname' => 'source',
+    'dbname' => 'mysql',
     'user' => 'root',
     'password' => '',
     'host' => 'localhost'
@@ -35,9 +35,10 @@ $sourceSchema = new Doctrine\DBAL\Schema\Schema(
 
 $gretta = new \Doctrine\DBAL\Schema\Schema();
 
+
 $destinationSchema = new SchemaPhpReverseEngineering($sourceSchema, 'gretta');
 
-eval($destinationSchema->__toString());
+eval($x = $destinationSchema->__toString());
 
 $comparator = new \Doctrine\DBAL\Schema\Comparator();
 $schemaDiff = $comparator->compare($gretta, $sourceSchema);
@@ -46,4 +47,8 @@ echo '<pre>Schema Diff</pre>';
 var_dump($schemaDiff->toSql($source->getDatabasePlatform())); // queries to get from one to another schema.
 var_dump($schemaDiff->toSaveSql($source->getDatabasePlatform()));
 
-echo 'PHP Definition : <br/><pre>' . ($destinationSchema) . '</pre>';
+if (strtolower(php_sapi_name()) == 'cli') {
+    file_put_contents('out.php', "<?php" . PHP_EOL . $x);
+} else {
+    echo 'PHP Definition : <br/><pre>' . ($destinationSchema) . '</pre>';
+}
